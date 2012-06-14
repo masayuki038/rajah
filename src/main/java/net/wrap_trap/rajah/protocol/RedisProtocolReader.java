@@ -1,45 +1,68 @@
 package net.wrap_trap.rajah.protocol;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
+import com.google.common.base.Preconditions;
+
 public class RedisProtocolReader {
 
-    private ByteBuffer buf;
+    private byte[] buf;
+    private int mark;
+    private int position;
+    private int limit;
+
     private static final String CHARSET = "UTF-8";
 
     public RedisProtocolReader(ChannelBuffer channelBuffer) {
-        this.buf = channelBuffer.toByteBuffer();
+        this.buf = channelBuffer.array();
+        this.mark = -1;
+        this.position = 0;
+        this.limit = buf.length - 1;
     }
 
     public String readLine() {
-        try {
-            while (true) {
-                if (!buf.hasRemaining()) {
-                    return buildString(buf);
+        mark = position;
+        while (true) {
+            if (position > limit) {
+                if (position > mark) {
+                    return buildString(buf, mark, position);
+                } else {
+                    return null;
                 }
-                byte b = buf.get();
-                if (b == '\r') {
-                    if (!buf.hasRemaining()) {
-                        return buildString(buf);
-                    }
-                    byte c = buf.get();
-                    if (c == '\n') {
-                        buf.position(buf.position() - 2);
-                        String ret = buildString(buf);
-                        buf.position(buf.position() + 2);
+            }
+            byte b = buf[position++];
+            if (b == '\r') {
+                if (position > limit) {
+                    return buildString(buf, mark, position);
+                }
+                byte c = buf[position++];
+                if (c == '\n') {
+                    String ret = buildString(buf, mark, position - 2);
+                    if ((ret != null) || (position > limit)) {
                         return ret;
+                    } else {
+                        // ignoring linefeed and continue
+                        mark = position;
                     }
                 }
             }
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex);
         }
     }
 
-    protected static String buildString(ByteBuffer buf) throws UnsupportedEncodingException {
-        return new String(buf.compact().array(), CHARSET);
+    protected static String buildString(byte[] buf, int from, int to) {
+        Preconditions.checkArgument((from <= to), "from <= to");
+        int span = to - from;
+        if (span == 0) {
+            return null;
+        }
+        byte[] dest = new byte[span];
+        System.arraycopy(buf, from, dest, 0, dest.length);
+        try {
+            return new String(dest, CHARSET);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
