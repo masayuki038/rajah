@@ -1,11 +1,15 @@
 package net.wrap_trap.rajah.protocol;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import net.wrap_trap.rajah.Client;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.junit.Test;
 
@@ -80,11 +84,100 @@ public class RedisProtocolReaderTest {
         assertThat(reader.readLine(), nullValue());
     }
 
-    protected RedisProtocolReader createRedisProtocolReader(String str) {
-        return new RedisProtocolReader(createChannelBuffer(str));
+    protected RedisProtocolReader createRedisProtocolReader(String... args) {
+        return new RedisProtocolReader(createChannelBuffer(args));
     }
 
-    protected ChannelBuffer createChannelBuffer(String str) {
+    @Test
+    public void testClientSet() throws RedisProtocolReadException {
+        RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$7", "myvalue");
+        Client client = reader.buildClientRequest();
+        Object[] args = client.getArgs();
+        assertThat(args.length, is(3));
+        assertThat((String) args[0], is("SET"));
+        assertThat((String) args[1], is("mykey"));
+        assertThat((String) args[2], is("myvalue"));
+    }
+
+    @Test
+    public void testClientSetWithMultiByteValue() throws RedisProtocolReadException {
+        RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$18", "マイバリュー");
+        Client client = reader.buildClientRequest();
+        Object[] args = client.getArgs();
+        assertThat(args.length, is(3));
+        assertThat((String) args[0], is("SET"));
+        assertThat((String) args[1], is("mykey"));
+        assertThat((String) args[2], is("マイバリュー"));
+    }
+
+    @Test
+    public void testClientNoLine() {
+        RedisProtocolReader reader = createRedisProtocolReader("");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("not null"), not(-1));
+        }
+    }
+
+    @Test
+    public void testFirstLineDontStartWithAsterisk() {
+        RedisProtocolReader reader = createRedisProtocolReader("1", "$3", "foo");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("start with '*'"), not(-1));
+        }
+    }
+
+    @Test
+    public void testFirstLineDontIndicateTheNumberOfArguments() {
+        RedisProtocolReader reader = createRedisProtocolReader("*a", "$3", "foo");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("indicate the number of arguments"), not(-1));
+        }
+    }
+
+    @Test
+    public void testBytesArgumentLack() {
+        RedisProtocolReader reader = createRedisProtocolReader("*3");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("The bytes of argument"), not(-1));
+        }
+    }
+
+    @Test
+    public void testValueArgumentLack() {
+        RedisProtocolReader reader = createRedisProtocolReader("*3", "$3");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("The value of argument"), not(-1));
+        }
+    }
+
+    @Test
+    public void testByteArgumentDontStartWithDoller() {
+        RedisProtocolReader reader = createRedisProtocolReader("*3", "3", "foo");
+        try {
+            reader.buildClientRequest();
+            fail();
+        } catch (RedisProtocolReadException e) {
+            assertThat(e.getMessage().indexOf("start with '$'"), not(-1));
+        }
+    }
+
+    protected ChannelBuffer createChannelBuffer(String[] args) {
+        String str = StringUtils.join(args, "\r\n");
         ChannelBuffer cb = mock(ChannelBuffer.class);
         try {
             when(cb.array()).thenReturn(new String(str).getBytes("UTF-8"));

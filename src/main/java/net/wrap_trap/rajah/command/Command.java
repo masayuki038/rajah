@@ -4,25 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.wrap_trap.rajah.Client;
+import net.wrap_trap.rajah.Database;
 
 import com.google.common.base.Preconditions;
 
 public enum Command {
     GET("get", 2, "w", 1, 1, 1, 1) {
         @Override
-        public Object execute(Client client) {
+        public Object execute(Client client, Database database) {
             Object[] args = client.getArgs();
             Preconditions.checkArgument(args.length > 0);
             // TODO check the expiring for a key and propagate these to slaves;
-            return client.getDatabase().getMap().get(args[1]);
+            return database.getMap().get(args[1]);
         }
     },
     SET("set", 3, "wm", 0, 1, 1, 1) {
         @Override
-        public Object execute(Client client) {
+        public Object execute(Client client, Database database) {
             Object[] args = client.getArgs();
             Preconditions.checkArgument(args.length > 1);
-            client.getDatabase().getMap().put(args[1].toString(), args[2]);
+            database.getMap().put(args[1].toString(), args[2]);
             // TODO check the expiring for a key
             // TODO set REDIS_DIRTY_CAS to each client that watched the key.
             return null;
@@ -58,7 +59,7 @@ public enum Command {
         this.calls = 0L;
     }
 
-    public abstract Object execute(Client client);
+    public abstract Object execute(Client client, Database database);
 
     public Integer[] getKeys(Object[] args) {
         return null;
