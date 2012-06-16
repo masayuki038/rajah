@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import net.wrap_trap.rajah.Client;
+import net.wrap_trap.rajah.Request;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -91,8 +91,8 @@ public class RedisProtocolReaderTest {
     @Test
     public void testClientSet() throws RedisProtocolReadException {
         RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$7", "myvalue");
-        Client client = reader.buildClientRequest();
-        Object[] args = client.getArgs();
+        Request request = reader.buildClientRequest();
+        Object[] args = request.getArgs();
         assertThat(args.length, is(3));
         assertThat((String) args[0], is("SET"));
         assertThat((String) args[1], is("mykey"));
@@ -102,8 +102,8 @@ public class RedisProtocolReaderTest {
     @Test
     public void testClientSetWithMultiByteValue() throws RedisProtocolReadException {
         RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$18", "マイバリュー");
-        Client client = reader.buildClientRequest();
-        Object[] args = client.getArgs();
+        Request request = reader.buildClientRequest();
+        Object[] args = request.getArgs();
         assertThat(args.length, is(3));
         assertThat((String) args[0], is("SET"));
         assertThat((String) args[1], is("mykey"));

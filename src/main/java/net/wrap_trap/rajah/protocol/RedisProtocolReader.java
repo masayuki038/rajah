@@ -2,7 +2,7 @@ package net.wrap_trap.rajah.protocol;
 
 import java.io.UnsupportedEncodingException;
 
-import net.wrap_trap.rajah.Client;
+import net.wrap_trap.rajah.Request;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -24,7 +24,7 @@ public class RedisProtocolReader {
         this.limit = buf.length - 1;
     }
 
-    public Client buildClientRequest() throws RedisProtocolReadException {
+    public Request buildClientRequest() throws RedisProtocolReadException {
 
         int line = 1;
         String first = readLine(); // the number of an argument;
@@ -60,7 +60,7 @@ public class RedisProtocolReader {
             args[i] = value;
         }
 
-        return new Client(args);
+        return new Request(args);
     }
 
     protected String readLine() {

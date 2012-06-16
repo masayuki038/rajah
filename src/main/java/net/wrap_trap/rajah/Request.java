@@ -1,10 +1,10 @@
 package net.wrap_trap.rajah;
 
-public class Client {
+public class Request {
 
     private Object[] args;
 
-    public Client(Object[] args) {
+    public Request(Object[] args) {
         this.args = args;
     }
 

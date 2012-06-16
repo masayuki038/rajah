@@ -3,7 +3,7 @@ package net.wrap_trap.rajah.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.wrap_trap.rajah.Client;
+import net.wrap_trap.rajah.Request;
 import net.wrap_trap.rajah.Database;
 
 import com.google.common.base.Preconditions;
@@ -11,8 +11,8 @@ import com.google.common.base.Preconditions;
 public enum Command {
     GET("get", 2, "w", 1, 1, 1, 1) {
         @Override
-        public Object execute(Client client, Database database) {
-            Object[] args = client.getArgs();
+        public Object execute(Request request, Database database) {
+            Object[] args = request.getArgs();
             Preconditions.checkArgument(args.length > 0);
             // TODO check the expiring for a key and propagate these to slaves;
             return database.getMap().get(args[1]);
@@ -20,8 +20,8 @@ public enum Command {
     },
     SET("set", 3, "wm", 0, 1, 1, 1) {
         @Override
-        public Object execute(Client client, Database database) {
-            Object[] args = client.getArgs();
+        public Object execute(Request request, Database database) {
+            Object[] args = request.getArgs();
             Preconditions.checkArgument(args.length > 1);
             database.getMap().put(args[1].toString(), args[2]);
             // TODO check the expiring for a key
@@ -59,7 +59,7 @@ public enum Command {
         this.calls = 0L;
     }
 
-    public abstract Object execute(Client client, Database database);
+    public abstract Object execute(Request request, Database database);
 
     public Integer[] getKeys(Object[] args) {
         return null;
