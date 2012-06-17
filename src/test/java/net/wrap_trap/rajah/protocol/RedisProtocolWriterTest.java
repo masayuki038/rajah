@@ -22,7 +22,7 @@ public class RedisProtocolWriterTest {
         Channel cb = createChannel(ret);
         Reply reply = new OkReply();
         reply.write(cb);
-        assertThat(ret.toString(), is("+OK"));
+        assertThat(ret.toString(), is("+OK\r\n"));
     }
 
     @Test

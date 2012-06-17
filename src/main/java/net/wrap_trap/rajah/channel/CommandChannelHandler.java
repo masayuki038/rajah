@@ -1,11 +1,14 @@
 package net.wrap_trap.rajah.channel;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import net.wrap_trap.rajah.Database;
 import net.wrap_trap.rajah.Reply;
 import net.wrap_trap.rajah.Request;
 import net.wrap_trap.rajah.command.Command;
+import net.wrap_trap.rajah.command.Get;
+import net.wrap_trap.rajah.command.Set;
 import net.wrap_trap.rajah.protocol.RedisProtocolReadException;
 import net.wrap_trap.rajah.protocol.RedisProtocolReader;
 import net.wrap_trap.rajah.protocol.RedisProtocolWriteException;
@@ -23,9 +26,17 @@ import org.slf4j.LoggerFactory;
 public class CommandChannelHandler extends SimpleChannelHandler {
 
     protected static Logger logger = LoggerFactory.getLogger(CommandChannelHandler.class);
-    private Database database = new Database(new HashMap<String, Object>());
+    private Database database;
 
-    public CommandChannelHandler() {}
+    private Map<String, Command> commandMap;
+
+    public CommandChannelHandler() {
+        commandMap = new HashMap<String, Command>();
+        commandMap.put("GET", new Get());
+        commandMap.put("SET", new Set());
+
+        database = new Database(new HashMap<String, Object>());
+    }
 
     @Override
     public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
@@ -53,15 +64,13 @@ public class CommandChannelHandler extends SimpleChannelHandler {
         RedisProtocolReader reader = new RedisProtocolReader(in);
         try {
             Request request = reader.buildClientRequest();
-            String command = (String) request.getArgs()[0];
-            Reply reply;
-            if (command.equals("SET")) {
-                reply = Command.SET.execute(request, database);
-            } else if (command.equals("GET")) {
-                reply = Command.GET.execute(request, database);
-            } else {
+            String commandName = (String) request.getArgs()[0];
+
+            Command command = commandMap.get(commandName);
+            if (command == null) {
                 throw new IllegalArgumentException(String.format("command: %s is unacceptable.", command));
             }
+            Reply reply = command.execute(request, database);
             reply.write(e.getChannel());
         } catch (RedisProtocolReadException re) {
             throw new RuntimeException(re);
@@ -75,5 +84,6 @@ public class CommandChannelHandler extends SimpleChannelHandler {
         logger.error("error has occured.", e.getCause());
         Channel ch = e.getChannel();
         ch.close();
+        ctx.sendUpstream(e);
     }
 }

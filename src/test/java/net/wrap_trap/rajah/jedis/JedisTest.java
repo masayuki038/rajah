@@ -15,5 +15,6 @@ public class JedisTest {
         jedis.set("foo", "bar");
         String value = jedis.get("foo");
         assertThat(value, is("bar"));
+        jedis.disconnect();
     }
 }
