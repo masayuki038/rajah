@@ -29,4 +29,13 @@ public class RedisProtocolWriter {
             throw new RedisProtocolWriteException(ex);
         }
     }
+
+    public void writeIntegerReply(Integer value) throws RedisProtocolWriteException {
+        try {
+            String ret = ":" + value + LT;
+            channel.write(ret);
+        } catch (Exception ex) {
+            throw new RedisProtocolWriteException(ex);
+        }
+    }
 }
