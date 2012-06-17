@@ -9,8 +9,6 @@ public class RedisProtocolReader {
 
     private StringTokenizer framer;
 
-    private static final String CHARSET = "UTF-8";
-
     public RedisProtocolReader(String in) {
         framer = new StringTokenizer(in, "\r\n");
     }
