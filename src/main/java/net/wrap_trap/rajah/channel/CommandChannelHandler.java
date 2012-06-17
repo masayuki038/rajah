@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.wrap_trap.rajah.Database;
-import net.wrap_trap.rajah.Reply;
-import net.wrap_trap.rajah.Request;
 import net.wrap_trap.rajah.command.Command;
 import net.wrap_trap.rajah.command.Del;
 import net.wrap_trap.rajah.command.Exists;
@@ -14,6 +12,8 @@ import net.wrap_trap.rajah.command.Set;
 import net.wrap_trap.rajah.protocol.RedisProtocolReadException;
 import net.wrap_trap.rajah.protocol.RedisProtocolReader;
 import net.wrap_trap.rajah.protocol.RedisProtocolWriteException;
+import net.wrap_trap.rajah.protocol.Reply;
+import net.wrap_trap.rajah.protocol.Request;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelEvent;

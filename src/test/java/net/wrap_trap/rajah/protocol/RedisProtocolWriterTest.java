@@ -5,9 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import net.wrap_trap.rajah.BulkReplies;
-import net.wrap_trap.rajah.OkReply;
-import net.wrap_trap.rajah.Reply;
 
 import org.jboss.netty.channel.Channel;
 import org.junit.Test;

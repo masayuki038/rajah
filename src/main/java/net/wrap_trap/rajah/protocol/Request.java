@@ -1,4 +1,4 @@
-package net.wrap_trap.rajah;
+package net.wrap_trap.rajah.protocol;
 
 public class Request {
 

@@ -1,6 +1,5 @@
-package net.wrap_trap.rajah;
+package net.wrap_trap.rajah.protocol;
 
-import net.wrap_trap.rajah.protocol.RedisProtocolWriteException;
 
 import org.jboss.netty.channel.Channel;
 

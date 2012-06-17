@@ -1,8 +1,8 @@
 package net.wrap_trap.rajah.command;
 
 import net.wrap_trap.rajah.Database;
-import net.wrap_trap.rajah.Reply;
-import net.wrap_trap.rajah.Request;
+import net.wrap_trap.rajah.protocol.Reply;
+import net.wrap_trap.rajah.protocol.Request;
 
 public interface Command {
 
