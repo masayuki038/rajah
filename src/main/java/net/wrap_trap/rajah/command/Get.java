@@ -15,5 +15,4 @@ public class Get implements Command {
         // TODO check the expiring for a key and propagate these to slaves;
         return new BulkReplies((String) database.getMap().get(args[1]));
     }
-
 }

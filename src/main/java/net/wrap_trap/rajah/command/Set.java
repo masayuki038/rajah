@@ -17,5 +17,4 @@ public class Set implements Command {
         // TODO set REDIS_DIRTY_CAS to each client that watched the key.
         return new OkReply();
     }
-
 }
