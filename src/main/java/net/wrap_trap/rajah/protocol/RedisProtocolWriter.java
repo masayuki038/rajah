@@ -1,24 +1,22 @@
 package net.wrap_trap.rajah.protocol;
 
-import java.io.UnsupportedEncodingException;
-
-import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.channel.Channel;
 
 public class RedisProtocolWriter {
 
-    private ChannelBuffer channelBuffer;
+    private Channel channel;
 
     private static final String CHARSET = "UTF-8";
     private static final String LT = "\r\n";
 
-    public RedisProtocolWriter(ChannelBuffer channelBuffer) {
-        this.channelBuffer = channelBuffer;
+    public RedisProtocolWriter(Channel channel) {
+        this.channel = channel;
     }
 
     public void writeStatusReply(String status) throws RedisProtocolWriteException {
         try {
-            channelBuffer.writeBytes(("+" + status).getBytes(CHARSET));
-        } catch (UnsupportedEncodingException ex) {
+            channel.write("+" + status + LT);
+        } catch (Exception ex) {
             throw new RedisProtocolWriteException(ex);
         }
     }
@@ -26,8 +24,8 @@ public class RedisProtocolWriter {
     public void writeBulkReply(String value) throws RedisProtocolWriteException {
         try {
             String ret = "$" + Integer.toString(value.length()) + LT + value + LT;
-            channelBuffer.writeBytes(ret.getBytes(CHARSET));
-        } catch (UnsupportedEncodingException ex) {
+            channel.write(ret);
+        } catch (Exception ex) {
             throw new RedisProtocolWriteException(ex);
         }
     }

@@ -5,12 +5,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import net.wrap_trap.rajah.Request;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.junit.Test;
 
 public class RedisProtocolReaderTest {
@@ -54,7 +51,7 @@ public class RedisProtocolReaderTest {
     public void testGetLineOfAsciiTerminatedCR() {
         RedisProtocolReader reader = createRedisProtocolReader("foo\r\nbar\r");
         assertThat(reader.readLine(), is("foo"));
-        assertThat(reader.readLine(), is("bar\r"));
+        assertThat(reader.readLine(), is("bar"));
         assertThat(reader.readLine(), nullValue());
     }
 
@@ -62,7 +59,7 @@ public class RedisProtocolReaderTest {
     public void testGetLineOfAsciiTerminatedLF() {
         RedisProtocolReader reader = createRedisProtocolReader("foo\r\nbar\n");
         assertThat(reader.readLine(), is("foo"));
-        assertThat(reader.readLine(), is("bar\n"));
+        assertThat(reader.readLine(), is("bar"));
         assertThat(reader.readLine(), nullValue());
     }
 
@@ -82,10 +79,6 @@ public class RedisProtocolReaderTest {
         assertThat(reader.readLine(), is("ÉoÅ["));
         assertThat(reader.readLine(), is("Ç†"));
         assertThat(reader.readLine(), nullValue());
-    }
-
-    protected RedisProtocolReader createRedisProtocolReader(String... args) {
-        return new RedisProtocolReader(createChannelBuffer(args));
     }
 
     @Test
@@ -176,14 +169,7 @@ public class RedisProtocolReaderTest {
         }
     }
 
-    protected ChannelBuffer createChannelBuffer(String[] args) {
-        String str = StringUtils.join(args, "\r\n");
-        ChannelBuffer cb = mock(ChannelBuffer.class);
-        try {
-            when(cb.array()).thenReturn(new String(str).getBytes("UTF-8"));
-            return cb;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    protected RedisProtocolReader createRedisProtocolReader(String... args) {
+        return new RedisProtocolReader(StringUtils.join(args, "\r\n"));
     }
 }

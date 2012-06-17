@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.wrap_trap</groupId>
-  <artifactId>lrmaps</artifactId>
+  <artifactId>rajah</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <description>LRMAPS is light-weight remote map server.</description>
   <dependencies>
@@ -40,6 +40,12 @@
   	<groupId>org.apache.commons</groupId>
   	<artifactId>commons-lang3</artifactId>
   	<version>3.1</version>
+  </dependency>
+  <dependency>
+  	<groupId>redis.clients</groupId>
+  	<artifactId>jedis</artifactId>
+  	<version>2.1.0</version>
+  	<scope>test</scope>
   </dependency>
   </dependencies>
 </project>

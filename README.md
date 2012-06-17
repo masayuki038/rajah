@@ -1,4 +1,12 @@
-lrmaps
+Rajah
 ======
 
-LRMAPS is Light-weight remote map server.
+Rajah is key-value store written in Java. Clinet-server interface depends on Redis-Protocol.
+- SET(implemented)
+- GET(implemented)
+- MSET
+- MGET
+- DEL
+- EXISTS
+- INFO
+- SHUTDOWN
