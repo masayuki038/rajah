@@ -13,6 +13,11 @@ public class Get implements Command {
         Object[] args = request.getArgs();
         Preconditions.checkArgument(args.length == 2);
         // TODO check the expiring for a key and propagate these to slaves;
-        return new BulkReplies((String) database.getMap().get(args[1]));
+
+        Object value = database.getMap().get(args[1]);
+        if (value == null) {
+            return new BulkReplies(null);
+        }
+        return new BulkReplies(String.valueOf(value));
     }
 }
