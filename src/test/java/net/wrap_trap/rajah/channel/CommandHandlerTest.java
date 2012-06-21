@@ -20,39 +20,47 @@ public class CommandHandlerTest {
     @Test
     public void testSetGet() {
         CommandChannelHandler h = new CommandChannelHandler();
-        set(h, "*3", "$3", "SET", "$3", "foo", "$3", "bar");
-        get(h, "bar", "*2", "$3", "GET", "$3", "foo");
+        set(h, "foo", "bar");
+        get(h, "bar", "foo");
     }
 
     @Test
     public void testExists() {
         CommandChannelHandler h = new CommandChannelHandler();
-        exists(h, 0, "*2", "$6", "EXISTS", "$3", "foo");
-        set(h, "*3", "$3", "SET", "$3", "foo", "$3", "bar");
-        exists(h, 1, "*2", "$6", "EXISTS", "$3", "foo");
+        exists(h, 0, "foo");
+        set(h, "foo", "bar");
+        exists(h, 1, "foo");
     }
 
     @Test
     public void testDel() {
         CommandChannelHandler h = new CommandChannelHandler();
-        set(h, "*3", "$3", "SET", "$3", "foo", "$3", "bar");
-        set(h, "*3", "$3", "SET", "$4", "hoge", "$3", "hogehoge");
-        del(h, 2, "*3", "$3", "DEL", "$3", "foo", "$4", "hoge");
-        get(h, null, "*2", "$3", "GET", "$3", "foo");
+        set(h, "foo", "bar");
+        set(h, "hoge", "hogehoge");
+        del(h, 2, "foo", "hoge");
+        get(h, null, "foo");
     }
 
     @Test
     public void testMget() {
         CommandChannelHandler h = new CommandChannelHandler();
-        set(h, "*3", "$3", "SET", "$3", "foo", "$3", "bar");
-        set(h, "*3", "$3", "SET", "$3", "hoge", "$3", "hogehoge");
+        set(h, "foo", "bar");
+        set(h, "hoge", "hogehoge");
         String[] expected = new String[] { "bar", null, "hogehoge" };
-        mget(h, expected, "*4", "$3", "MGET", "$3", "foo", "$11", "nonexisting", "$4", "hoge");
+        mget(h, expected, "foo", "nonexisting", "hoge");
+    }
+
+    @Test
+    public void testMset() {
+        CommandChannelHandler h = new CommandChannelHandler();
+        mset(h, "foo", "bar", "hoge", "hogehoge");
+        String[] expected = new String[] { "bar", null, "hogehoge" };
+        mget(h, expected, "foo", "nonexisting", "hoge");
     }
 
     protected void set(CommandChannelHandler h, String... args) {
         StringBuffer setRet = new StringBuffer();
-        String setIn = createRequest(args);
+        String setIn = createRequest(createCommand("SET", args));
 
         MessageEvent e = createMessageEvent(setIn, setRet);
         h.messageReceived(null, e);
@@ -61,7 +69,7 @@ public class CommandHandlerTest {
 
     protected void get(CommandChannelHandler h, String expected, String... args) {
         StringBuffer getRet = new StringBuffer();
-        String getIn = createRequest(args);
+        String getIn = createRequest(createCommand("GET", args));
         MessageEvent e2 = createMessageEvent(getIn, getRet);
         h.messageReceived(null, e2);
         if (expected != null) {
@@ -73,7 +81,7 @@ public class CommandHandlerTest {
 
     protected void exists(CommandChannelHandler h, int expected, String... args) {
         StringBuffer existsRet = new StringBuffer();
-        String existsIn = createRequest(args);
+        String existsIn = createRequest(createCommand("EXISTS", args));
         MessageEvent e = createMessageEvent(existsIn, existsRet);
         h.messageReceived(null, e);
         assertThat(existsRet.toString(), is(":" + expected + Reply.LT));
@@ -81,7 +89,7 @@ public class CommandHandlerTest {
 
     protected void del(CommandChannelHandler h, int expected, String... args) {
         StringBuffer delRet = new StringBuffer();
-        String delIn = createRequest(args);
+        String delIn = createRequest(createCommand("DEL", args));
         MessageEvent e3 = createMessageEvent(delIn, delRet);
         h.messageReceived(null, e3);
         assertThat(delRet.toString(), is(":" + expected + Reply.LT));
@@ -89,7 +97,7 @@ public class CommandHandlerTest {
 
     protected void mget(CommandChannelHandler h, String[] expected, String... args) {
         StringBuffer mgetRet = new StringBuffer();
-        String mgetIn = createRequest(args);
+        String mgetIn = createRequest(createCommand("MGET", args));
         MessageEvent e2 = createMessageEvent(mgetIn, mgetRet);
         h.messageReceived(null, e2);
         StringBuffer sb = new StringBuffer();
@@ -102,6 +110,28 @@ public class CommandHandlerTest {
         }
         sb.insert(0, "*" + expected.length + Reply.LT);
         assertThat(mgetRet.toString(), is(sb.toString()));
+    }
+
+    protected void mset(CommandChannelHandler h, String... args) {
+        StringBuffer msetRet = new StringBuffer();
+        String msetIn = createRequest(createCommand("MSET", args));
+        MessageEvent e2 = createMessageEvent(msetIn, msetRet);
+        h.messageReceived(null, e2);
+        assertThat(msetRet.toString(), is("+OK" + Reply.LT));
+    }
+
+    protected String[] createCommand(String command, String... args) {
+        int len = (args.length + 1) * 2 + 1;
+        String[] expanded = new String[len];
+        int i = 0;
+        expanded[i++] = "*" + ((len - 1) / 2);
+        expanded[i++] = "$" + command.length();
+        expanded[i++] = command;
+        for (int j = 0; j < args.length; j++) {
+            expanded[i++] = "$" + args[j].length();
+            expanded[i++] = args[j];
+        }
+        return expanded;
     }
 
     protected String createRequest(String... args) {
