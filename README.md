@@ -8,5 +8,14 @@ Rajah is key-value store written in Java. Clinet-server interface depends on Red
 - MGET(implemented)
 - DEL(implemented)
 - EXISTS(implemented)
-- INFO
-- SHUTDOWN
+- KEYS
+- RENAME
+- RENAMENX
+
+- EXPIRE
+- EXPIREAT
+- PERSIST
+- PEXPIRE
+- PEXPIREAT
+- PTTL
+- TTL
