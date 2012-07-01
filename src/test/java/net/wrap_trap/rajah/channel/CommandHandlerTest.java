@@ -67,6 +67,8 @@ public class CommandHandlerTest {
     @Test
     public void testSetExGet() throws InterruptedException {
         final CommandChannelHandler h = new CommandChannelHandler(new Database());
+        final boolean[] results = new boolean[3];
+
         setEx(h, "foo", "10", "bar");
         get(h, "bar", "foo");
 
@@ -75,21 +77,28 @@ public class CommandHandlerTest {
             @Override
             public void run() {
                 get(h, "bar", "foo");
+                results[0] = true;
             }
         }, 1000L);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 get(h, "bar", "foo");
+                results[1] = true;
             }
         }, 9000L);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 get(h, null, "foo");
+                results[2] = true;
             }
         }, 10000L);
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(11);
+
+        assertThat(results[0], is(true));
+        assertThat(results[1], is(true));
+        assertThat(results[2], is(true));
     }
 
     protected void set(CommandChannelHandler h, String... args) {
