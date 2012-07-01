@@ -10,12 +10,12 @@ import com.google.common.base.Preconditions;
 public class Del implements Command {
 
     public Reply execute(Request request, Database database) {
-        Object[] args = request.getArgs();
+        String[] args = request.getArgs();
         Preconditions.checkArgument(args.length > 1);
         int removed = 0;
 
         for (int i = 1; i < args.length; i++) {
-            Object o = database.getMap().remove(args[i].toString());
+            Object o = database.getMap().remove(args[i]);
             if (o != null) {
                 removed++;
             }

@@ -10,11 +10,17 @@ import org.jboss.netty.handler.codec.string.StringEncoder;
 
 public class RajahPipelineFactory implements ChannelPipelineFactory {
 
+    private Database database;
+
+    public RajahPipelineFactory(Database database) {
+        this.database = database;
+    }
+
     public ChannelPipeline getPipeline() throws Exception {
         ChannelPipeline pipeline = Channels.pipeline();
         pipeline.addLast("decoder", new StringDecoder());
         pipeline.addLast("ecoder", new StringEncoder());
-        pipeline.addLast("handler", new CommandChannelHandler());
+        pipeline.addLast("handler", new CommandChannelHandler(database));
         return pipeline;
     }
 

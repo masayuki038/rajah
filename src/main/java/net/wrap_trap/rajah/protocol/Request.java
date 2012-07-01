@@ -2,13 +2,13 @@ package net.wrap_trap.rajah.protocol;
 
 public class Request {
 
-    private Object[] args;
+    private String[] args;
 
-    public Request(Object[] args) {
+    public Request(String[] args) {
         this.args = args;
     }
 
-    public Object[] getArgs() {
+    public String[] getArgs() {
         return args;
     }
 }

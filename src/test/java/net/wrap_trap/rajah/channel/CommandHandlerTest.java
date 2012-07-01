@@ -6,6 +6,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+
+import net.wrap_trap.rajah.Database;
 import net.wrap_trap.rajah.protocol.Reply;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,14 +25,14 @@ public class CommandHandlerTest {
 
     @Test
     public void testSetGet() {
-        CommandChannelHandler h = new CommandChannelHandler();
+        CommandChannelHandler h = new CommandChannelHandler(new Database());
         set(h, "foo", "bar");
         get(h, "bar", "foo");
     }
 
     @Test
     public void testExists() {
-        CommandChannelHandler h = new CommandChannelHandler();
+        CommandChannelHandler h = new CommandChannelHandler(new Database());
         exists(h, 0, "foo");
         set(h, "foo", "bar");
         exists(h, 1, "foo");
@@ -34,7 +40,7 @@ public class CommandHandlerTest {
 
     @Test
     public void testDel() {
-        CommandChannelHandler h = new CommandChannelHandler();
+        CommandChannelHandler h = new CommandChannelHandler(new Database());
         set(h, "foo", "bar");
         set(h, "hoge", "hogehoge");
         del(h, 2, "foo", "hoge");
@@ -43,7 +49,7 @@ public class CommandHandlerTest {
 
     @Test
     public void testMget() {
-        CommandChannelHandler h = new CommandChannelHandler();
+        CommandChannelHandler h = new CommandChannelHandler(new Database());
         set(h, "foo", "bar");
         set(h, "hoge", "hogehoge");
         String[] expected = new String[] { "bar", null, "hogehoge" };
@@ -52,10 +58,38 @@ public class CommandHandlerTest {
 
     @Test
     public void testMset() {
-        CommandChannelHandler h = new CommandChannelHandler();
+        CommandChannelHandler h = new CommandChannelHandler(new Database());
         mset(h, "foo", "bar", "hoge", "hogehoge");
         String[] expected = new String[] { "bar", null, "hogehoge" };
         mget(h, expected, "foo", "nonexisting", "hoge");
+    }
+
+    @Test
+    public void testSetExGet() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+        setEx(h, "foo", "10", "bar");
+        get(h, "bar", "foo");
+
+        Timer timer = new Timer("a few second later", false);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                get(h, "bar", "foo");
+            }
+        }, 1000L);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                get(h, "bar", "foo");
+            }
+        }, 9000L);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                get(h, null, "foo");
+            }
+        }, 10000L);
+        TimeUnit.SECONDS.sleep(10);
     }
 
     protected void set(CommandChannelHandler h, String... args) {
@@ -118,6 +152,15 @@ public class CommandHandlerTest {
         MessageEvent e2 = createMessageEvent(msetIn, msetRet);
         h.messageReceived(null, e2);
         assertThat(msetRet.toString(), is("+OK" + Reply.LT));
+    }
+
+    protected void setEx(CommandChannelHandler h, String... args) {
+        StringBuffer setRet = new StringBuffer();
+        String setIn = createRequest(createCommand("SETEX", args));
+
+        MessageEvent e = createMessageEvent(setIn, setRet);
+        h.messageReceived(null, e);
+        assertThat(setRet.toString(), is("+OK" + Reply.LT));
     }
 
     protected String[] createCommand(String command, String... args) {

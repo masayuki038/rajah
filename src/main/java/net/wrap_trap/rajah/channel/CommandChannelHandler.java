@@ -11,6 +11,7 @@ import net.wrap_trap.rajah.command.Get;
 import net.wrap_trap.rajah.command.Mget;
 import net.wrap_trap.rajah.command.Mset;
 import net.wrap_trap.rajah.command.Set;
+import net.wrap_trap.rajah.command.SetEx;
 import net.wrap_trap.rajah.protocol.RedisProtocolReadException;
 import net.wrap_trap.rajah.protocol.RedisProtocolReader;
 import net.wrap_trap.rajah.protocol.RedisProtocolWriteException;
@@ -34,7 +35,7 @@ public class CommandChannelHandler extends SimpleChannelHandler {
 
     private Map<String, Command> commandMap;
 
-    public CommandChannelHandler() {
+    public CommandChannelHandler(Database database) {
         commandMap = new HashMap<String, Command>();
         commandMap.put("GET", new Get());
         commandMap.put("SET", new Set());
@@ -42,8 +43,9 @@ public class CommandChannelHandler extends SimpleChannelHandler {
         commandMap.put("EXISTS", new Exists());
         commandMap.put("MGET", new Mget());
         commandMap.put("MSET", new Mset());
+        commandMap.put("SETEX", new SetEx());
 
-        database = new Database(new HashMap<String, Object>());
+        this.database = database;
     }
 
     @Override

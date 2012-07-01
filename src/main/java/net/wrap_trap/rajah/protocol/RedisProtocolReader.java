@@ -3,7 +3,6 @@ package net.wrap_trap.rajah.protocol;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-
 public class RedisProtocolReader {
 
     private StringTokenizer framer;

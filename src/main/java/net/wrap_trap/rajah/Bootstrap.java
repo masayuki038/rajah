@@ -1,6 +1,7 @@
 package net.wrap_trap.rajah;
 
 import java.net.InetSocketAddress;
+import java.util.Timer;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -20,15 +21,20 @@ public class Bootstrap {
     }
 
     public void run() {
+        Database database = new Database();
+
         ChannelFactory factory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
                                                                    Executors.newCachedThreadPool());
         ServerBootstrap bootstrap = new ServerBootstrap(factory);
-        bootstrap.setPipelineFactory(new RajahPipelineFactory());
+        bootstrap.setPipelineFactory(new RajahPipelineFactory(database));
 
         bootstrap.bind(new InetSocketAddress(port));
         if (logger.isInfoEnabled()) {
             logger.info("server start");
         }
+
+        Timer timer = new Timer("activeExpireCycle", true);
+        timer.schedule(new ActiveExpireCycle(database), 1000L, 1000L);
     }
 
     public static void main(String[] args) throws Exception {

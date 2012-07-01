@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 public class Exists implements Command {
 
     public Reply execute(Request request, Database database) {
-        Object[] args = request.getArgs();
+        String[] args = request.getArgs();
         Preconditions.checkArgument(args.length == 2);
 
         boolean containsKey = database.getMap().containsKey(args[1]);
