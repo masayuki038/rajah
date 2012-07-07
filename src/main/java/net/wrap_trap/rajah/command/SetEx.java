@@ -15,7 +15,7 @@ public class SetEx implements Command {
         String[] args = request.getArgs();
         Preconditions.checkArgument(args.length == 4);
         int expire = Integer.parseInt(args[2]);
-        Element e = new Element(args[3], expireDateFromNow(expire * 1000L));
+        Element e = new Element(args[1], args[3], expireDateFromNow(expire * 1000L));
         database.getMap().put(args[1], e);
         database.getExpires().add(e);
         // TODO check the expiring for a key

@@ -1,5 +1,8 @@
 package net.wrap_trap.rajah;
 
+import static net.wrap_trap.rajah.command.ExpirationHelper.isExpired;
+
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 
@@ -16,15 +19,21 @@ public class ActiveExpireCycle extends TimerTask {
 
     @Override
     public void run() {
-        Set<Element> expire = database.getExpires();
-        long now = System.currentTimeMillis();
-        int num = expire.size();
+        Set<Element> expires = database.getExpires();
+        Map<String, Element> map = database.getMap();
+        int num = expires.size();
         if (num > REDIS_EXPIRELOOKUPS_PER_CRON) {
             num = REDIS_EXPIRELOOKUPS_PER_CRON;
         }
 
-        //        while(num-- > 0){
-        //            expire.
-        //        }
+        for (Element e : expires) {
+            if (isExpired(e)) {
+                map.remove(e.getKey());
+                database.getExpires().remove(e);
+            }
+            if (num-- > 0) {
+                break;
+            }
+        }
     }
 }

@@ -12,12 +12,12 @@ public class Database {
     private Set<Element> expires;
 
     public Database() {
-        this.map = new HashMap<String, Element>();
         this.expires = new TreeSet<Element>(new Comparator<Element>() {
             public int compare(Element t1, Element t2) {
                 return t1.getExpire().compareTo(t2.getExpire());
             }
         });
+        this.map = new RajahMap(new HashMap<String, Element>(), this.expires);
     }
 
     public Map<String, Element> getMap() {

@@ -13,7 +13,7 @@ public class Set implements Command {
     public Reply execute(Request request, Database database) {
         String[] args = request.getArgs();
         Preconditions.checkArgument(args.length > 1);
-        database.getMap().put(args[1], new Element(args[2]));
+        database.getMap().put(args[1], new Element(args[1], args[2]));
         // TODO check the expiring for a key
         // TODO set REDIS_DIRTY_CAS to each client that watched the key.
         return new OkReply();

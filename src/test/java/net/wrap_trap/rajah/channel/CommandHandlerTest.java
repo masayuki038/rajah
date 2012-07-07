@@ -67,7 +67,7 @@ public class CommandHandlerTest {
     @Test
     public void testSetExGet() throws InterruptedException {
         final CommandChannelHandler h = new CommandChannelHandler(new Database());
-        final boolean[] results = new boolean[3];
+        final boolean[] results = new boolean[2];
 
         setEx(h, "foo", "10", "bar");
         get(h, "bar", "foo");
@@ -79,21 +79,95 @@ public class CommandHandlerTest {
                 get(h, "bar", "foo");
                 results[0] = true;
             }
-        }, 1000L);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                get(h, "bar", "foo");
-                results[1] = true;
-            }
         }, 9000L);
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 get(h, null, "foo");
-                results[2] = true;
+                results[1] = true;
             }
         }, 10000L);
+        TimeUnit.SECONDS.sleep(11);
+
+        assertThat(results[0], is(true));
+        assertThat(results[1], is(true));
+    }
+
+    @Test
+    public void testSetExMGet() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+        final boolean[] results = new boolean[3];
+
+        setEx(h, "foo", "10", "bar");
+        setEx(h, "hoge", "5", "hogehoge");
+        mget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
+
+        Timer timer = new Timer("a few second later", false);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
+                results[0] = true;
+            }
+        }, 4500L);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mget(h, new String[] { "bar", null }, "foo", "hoge");
+                results[1] = true;
+            }
+        }, 9500L);
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                mget(h, new String[] { null, null }, "foo", "hoge");
+                results[2] = true;
+            }
+        }, 10500L);
+        TimeUnit.SECONDS.sleep(11);
+
+        assertThat(results[0], is(true));
+        assertThat(results[1], is(true));
+        assertThat(results[2], is(true));
+    }
+
+    @Test
+    public void testSetExExists() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+        final boolean[] results = new boolean[3];
+
+        setEx(h, "foo", "10", "bar");
+        setEx(h, "hoge", "5", "hogehoge");
+        exists(h, 1, "foo");
+        exists(h, 1, "hoge");
+
+        Timer timer = new Timer("a few second later", false);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                exists(h, 1, "foo");
+                exists(h, 1, "hoge");
+                results[0] = true;
+            }
+        }, 4500L);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                exists(h, 1, "foo");
+                exists(h, 0, "hoge");
+                results[1] = true;
+            }
+        }, 9500L);
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                exists(h, 0, "foo");
+                exists(h, 0, "hoge");
+                results[2] = true;
+            }
+        }, 10500L);
         TimeUnit.SECONDS.sleep(11);
 
         assertThat(results[0], is(true));
@@ -122,9 +196,9 @@ public class CommandHandlerTest {
         }
     }
 
-    protected void exists(CommandChannelHandler h, int expected, String... args) {
+    protected void exists(CommandChannelHandler h, int expected, String key) {
         StringBuffer existsRet = new StringBuffer();
-        String existsIn = createRequest(createCommand("EXISTS", args));
+        String existsIn = createRequest(createCommand("EXISTS", key));
         MessageEvent e = createMessageEvent(existsIn, existsRet);
         h.messageReceived(null, e);
         assertThat(existsRet.toString(), is(":" + expected + Reply.LT));

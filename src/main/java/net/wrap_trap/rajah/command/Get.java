@@ -1,7 +1,5 @@
 package net.wrap_trap.rajah.command;
 
-import static net.wrap_trap.rajah.command.ExpirationHelper.isExpired;
-
 import java.util.Map;
 
 import net.wrap_trap.rajah.Database;
@@ -22,11 +20,6 @@ public class Get implements Command {
         Map<String, Element> map = database.getMap();
         Element e = map.get(args[1]);
         if (e == null) {
-            return new BulkReplies(null);
-        }
-        if (isExpired(e)) {
-            map.remove(args[1]);
-            database.getExpires().remove(e);
             return new BulkReplies(null);
         }
         return new BulkReplies(String.valueOf(e.getValue()));

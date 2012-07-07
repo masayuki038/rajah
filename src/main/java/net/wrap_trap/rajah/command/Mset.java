@@ -20,7 +20,7 @@ public class Mset implements Command {
         Map<String, Element> map = database.getMap();
 
         for (int i = 1; i < args.length; i = i + 2) {
-            map.put(args[i], new Element(args[i + 1]));
+            map.put(args[i], new Element(args[i], args[i + 1]));
         }
 
         return new OkReply();
