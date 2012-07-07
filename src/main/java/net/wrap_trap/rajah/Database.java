@@ -1,10 +1,10 @@
 package net.wrap_trap.rajah;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Database {
 
@@ -17,7 +17,7 @@ public class Database {
                 return t1.getExpire().compareTo(t2.getExpire());
             }
         });
-        this.map = new RajahMap(new HashMap<String, Element>(), this.expires);
+        this.map = new RajahMap(new ConcurrentHashMap<String, Element>(), this.expires);
     }
 
     public Map<String, Element> getMap() {

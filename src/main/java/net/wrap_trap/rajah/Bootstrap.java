@@ -23,8 +23,8 @@ public class Bootstrap {
     public void run() {
         Database database = new Database();
 
-        ChannelFactory factory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
-                                                                   Executors.newCachedThreadPool());
+        ChannelFactory factory = new NioServerSocketChannelFactory(Executors.newSingleThreadExecutor(),
+                                                                   Executors.newSingleThreadExecutor());
         ServerBootstrap bootstrap = new ServerBootstrap(factory);
         bootstrap.setPipelineFactory(new RajahPipelineFactory(database));
 
