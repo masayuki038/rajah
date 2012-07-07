@@ -84,7 +84,7 @@ public class RedisProtocolReaderTest {
     public void testClientSet() throws RedisProtocolReadException {
         RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$7", "myvalue");
         Request request = reader.buildClientRequest();
-        Object[] args = request.getArgs();
+        String[] args = request.getArgs();
         assertThat(args.length, is(3));
         assertThat((String) args[0], is("SET"));
         assertThat((String) args[1], is("mykey"));
@@ -95,7 +95,7 @@ public class RedisProtocolReaderTest {
     public void testClientSetWithMultiByteValue() throws RedisProtocolReadException {
         RedisProtocolReader reader = createRedisProtocolReader("*3", "$3", "SET", "$5", "mykey", "$18", "マイバリュー");
         Request request = reader.buildClientRequest();
-        Object[] args = request.getArgs();
+        String[] args = request.getArgs();
         assertThat(args.length, is(3));
         assertThat((String) args[0], is("SET"));
         assertThat((String) args[1], is("mykey"));
