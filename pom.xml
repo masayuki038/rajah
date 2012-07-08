@@ -4,6 +4,18 @@
   <artifactId>rajah</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <description>LRMAPS is light-weight remote map server.</description>
+  <repositories>
+  <repository>
+    <id>com.springsource.repository.bundles.milestone</id>
+    <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Milestones</name>
+    <url>http://repository.springsource.com/maven/bundles/milestone</url>
+  </repository>
+  <repository>
+    <id>com.springsource.repository.bundles.external</id>
+    <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Externals</name>
+    <url>http://repository.springsource.com/maven/bundles/external</url>
+  </repository>
+  </repositories>
   <dependencies>
   <dependency>
     <groupId>io.netty</groupId>
@@ -52,6 +64,21 @@
   	<artifactId>junit</artifactId>
   	<version>4.10</version>
   	<scope>test</scope>
+  </dependency>
+  <dependency>
+  	<groupId>org.springframework</groupId>
+  	<artifactId>spring-core</artifactId>
+  	<version>3.1.1.RELEASE</version>
+  </dependency>
+  <dependency>
+  	<groupId>org.jboss.spec.javax.annotation</groupId>
+  	<artifactId>jboss-annotations-api_1.1_spec</artifactId>
+  	<version>1.0.1.Final</version>
+  </dependency>
+  <dependency>
+  	<groupId>org.springframework</groupId>
+  	<artifactId>spring-context</artifactId>
+  	<version>3.1.1.RELEASE</version>
   </dependency>
   </dependencies>
 </project>
