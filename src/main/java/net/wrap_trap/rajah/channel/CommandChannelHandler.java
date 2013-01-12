@@ -13,6 +13,7 @@ import net.wrap_trap.rajah.command.Mget;
 import net.wrap_trap.rajah.command.Mset;
 import net.wrap_trap.rajah.command.Set;
 import net.wrap_trap.rajah.command.SetEx;
+import net.wrap_trap.rajah.command.Ttl;
 import net.wrap_trap.rajah.protocol.RedisProtocolReadException;
 import net.wrap_trap.rajah.protocol.RedisProtocolReader;
 import net.wrap_trap.rajah.protocol.RedisProtocolWriteException;
@@ -46,6 +47,7 @@ public class CommandChannelHandler extends SimpleChannelHandler {
         commandMap.put("MSET", new Mset());
         commandMap.put("SETEX", new SetEx());
         commandMap.put("EXPIRE", new Expire());
+        commandMap.put("TTL", new Ttl());
 
         this.database = database;
     }

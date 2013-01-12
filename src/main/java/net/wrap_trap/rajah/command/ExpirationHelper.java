@@ -8,6 +8,10 @@ public class ExpirationHelper {
         return System.currentTimeMillis() + expire;
     }
 
+    public static long remainingFromNow(long tsOfExpiration) {
+        return tsOfExpiration - System.currentTimeMillis();
+    }
+
     public static boolean isExpired(Element e) {
         Long expireDate = e.getExpire();
         if (expireDate == null) {

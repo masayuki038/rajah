@@ -11,9 +11,9 @@ Rajah is key-value store written in Java. Clinet-server interface depends on Red
 -- DEL
 -- EXISTS
 -- EXPIRE
+-- TTL
 
 - todo
--- TTL
 -- SADD
 -- RPUSH
 -- LPUSH
