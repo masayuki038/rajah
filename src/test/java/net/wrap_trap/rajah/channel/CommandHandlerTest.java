@@ -23,6 +23,36 @@ import org.mockito.stubbing.Answer;
 
 public class CommandHandlerTest {
 
+	@Test
+	public void testExpire() throws InterruptedException {
+		final CommandChannelHandler h = new CommandChannelHandler(new Database());
+		expire(h, 0, "foo", "10");
+		set(h, "foo", "bar");
+		expire(h, 1, "foo", "10");
+		
+        final boolean[] results = new boolean[2];
+        
+        Timer timer = new Timer("a few second later", false);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                get(h, "bar", "foo");
+                results[0] = true;
+            }
+        }, 9000L);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                get(h, null, "foo");
+                results[1] = true;
+            }
+        }, 10000L);
+        TimeUnit.SECONDS.sleep(11);
+        
+        assertThat(results[0], is(true));
+        assertThat(results[1], is(true));
+	}
+	
     @Test
     public void testSetGet() {
         CommandChannelHandler h = new CommandChannelHandler(new Database());
@@ -245,6 +275,16 @@ public class CommandHandlerTest {
         h.messageReceived(null, e);
         assertThat(setRet.toString(), is("+OK" + Reply.LT));
     }
+    
+    protected void expire(CommandChannelHandler h, int expected, String... args) {
+        StringBuffer expireRet = new StringBuffer();
+        String expireIn = createRequest(createCommand("EXPIRE", args));
+
+        MessageEvent e = createMessageEvent(expireIn, expireRet);
+        h.messageReceived(null, e);
+        assertThat(expireRet.toString(), is(":" + expected + Reply.LT));
+    }
+
 
     protected String[] createCommand(String command, String... args) {
         int len = (args.length + 1) * 2 + 1;

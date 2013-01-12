@@ -7,6 +7,7 @@ import net.wrap_trap.rajah.Database;
 import net.wrap_trap.rajah.command.Command;
 import net.wrap_trap.rajah.command.Del;
 import net.wrap_trap.rajah.command.Exists;
+import net.wrap_trap.rajah.command.Expire;
 import net.wrap_trap.rajah.command.Get;
 import net.wrap_trap.rajah.command.Mget;
 import net.wrap_trap.rajah.command.Mset;
@@ -44,6 +45,7 @@ public class CommandChannelHandler extends SimpleChannelHandler {
         commandMap.put("MGET", new Mget());
         commandMap.put("MSET", new Mset());
         commandMap.put("SETEX", new SetEx());
+        commandMap.put("EXPIRE", new Expire());
 
         this.database = database;
     }
