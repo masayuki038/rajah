@@ -1,18 +1,15 @@
 package net.wrap_trap.rajah.channel;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
 import net.wrap_trap.rajah.Database;
 import net.wrap_trap.rajah.protocol.Reply;
+import net.wrap_trap.rajah.test.matchers.ReplyMatchers;
+import net.wrap_trap.rajah.test.utils.AssertTask;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.netty.channel.Channel;
@@ -65,178 +62,187 @@ public class CommandHandlerTest {
     }
 
     @Test
-    public void testSetExGet() throws InterruptedException {
+    public void testSetExAndGetWithinLiveTime() throws InterruptedException {
         final CommandChannelHandler h = new CommandChannelHandler(new Database());
-        final boolean[] results = new boolean[2];
 
         assertSetEx(h, "foo", "10", "bar");
         assertGet(h, "bar", "foo");
-
-        Timer timer = new Timer("a few second later", false);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertGet(h, "bar", "foo");
-                results[0] = true;
-            }
-        }, 9000L);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                assertGet(h, null, "foo");
-                results[1] = true;
-            }
-        }, 10000L);
-        TimeUnit.SECONDS.sleep(11);
+			}
+        }).assertLater(9000L);
+    }
+    
+    @Test
+    public void testSetExAndOverdueGet() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
 
-        assertThat(results[0], is(true));
-        assertThat(results[1], is(true));
+        assertSetEx(h, "foo", "10", "bar");
+        assertGet(h, "bar", "foo");
+        
+        new AssertTask(new Runnable() {
+			public void run() {
+                assertGet(h, null, "foo");
+			}
+        }).assertLater(10000L);
     }
 
     @Test
-    public void testSetExMGet() throws InterruptedException {
+    public void testSetExAndMGetWithinLiveTime() throws InterruptedException {
         final CommandChannelHandler h = new CommandChannelHandler(new Database());
-        final boolean[] results = new boolean[3];
 
         assertSetEx(h, "foo", "10", "bar");
         assertSetEx(h, "hoge", "5", "hogehoge");
         assertMget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
-
-        Timer timer = new Timer("a few second later", false);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertMget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
-                results[0] = true;
-            }
-        }, 4500L);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+			}
+        }).assertLater(4500L);
+    }
+    
+    @Test
+    public void testSetExAndOverduMGet1() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+
+    	assertSetEx(h, "foo", "10", "bar");
+        assertSetEx(h, "hoge", "5", "hogehoge");
+        assertMget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertMget(h, new String[] { "bar", null }, "foo", "hoge");
-                results[1] = true;
-            }
-        }, 9500L);
+			}
+        }).assertLater(9500L);
+    }
+    
+    @Test
+    public void testSetExAndOverdueMGet2() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
 
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+    	assertSetEx(h, "foo", "10", "bar");
+        assertSetEx(h, "hoge", "5", "hogehoge");
+        assertMget(h, new String[] { "bar", "hogehoge" }, "foo", "hoge");
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertMget(h, new String[] { null, null }, "foo", "hoge");
-                results[2] = true;
-            }
-        }, 10500L);
-        TimeUnit.SECONDS.sleep(11);
-
-        assertThat(results[0], is(true));
-        assertThat(results[1], is(true));
-        assertThat(results[2], is(true));
+			}
+        }).assertLater(10500L);
     }
 
     @Test
-    public void testSetExExists() throws InterruptedException {
+    public void testSetExAndExistsWithinLiveTime() throws InterruptedException {
         final CommandChannelHandler h = new CommandChannelHandler(new Database());
-        final boolean[] results = new boolean[3];
 
         assertSetEx(h, "foo", "10", "bar");
         assertSetEx(h, "hoge", "5", "hogehoge");
         assertExists(h, 1, "foo");
         assertExists(h, 1, "hoge");
 
-        Timer timer = new Timer("a few second later", false);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertExists(h, 1, "foo");
                 assertExists(h, 1, "hoge");
-                results[0] = true;
-            }
-        }, 4500L);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+			}
+        }).assertLater(4500L);
+    }
+    
+    @Test
+    public void testSetExAndOverdueExists1() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+    
+        assertSetEx(h, "foo", "10", "bar");
+        assertSetEx(h, "hoge", "5", "hogehoge");
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertExists(h, 1, "foo");
                 assertExists(h, 0, "hoge");
-                results[1] = true;
-            }
-        }, 9500L);
-
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+			}
+        }).assertLater(9500L);
+    }
+    
+    @Test
+    public void testSetExAndOverdueExists2() throws InterruptedException {
+        final CommandChannelHandler h = new CommandChannelHandler(new Database());
+        
+        assertSetEx(h, "foo", "10", "bar");
+        assertSetEx(h, "hoge", "5", "hogehoge");
+        
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertExists(h, 0, "foo");
                 assertExists(h, 0, "hoge");
-                results[2] = true;
-            }
-        }, 10500L);
-        TimeUnit.SECONDS.sleep(11);
-
-        assertThat(results[0], is(true));
-        assertThat(results[1], is(true));
-        assertThat(results[2], is(true));
+			}
+        }).assertLater(10500L);
     }
 	
 	@Test
-	public void testExpire() throws InterruptedException {
+	public void testExpireAndGetWithLiveTime() throws InterruptedException {
 		final CommandChannelHandler h = new CommandChannelHandler(new Database());
+
 		assertExpire(h, 0, "foo", "10");
 		assertSet(h, "foo", "bar");
 		assertExpire(h, 1, "foo", "10");
 		
-        final boolean[] results = new boolean[2];
-        
-        Timer timer = new Timer("a few second later", false);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertGet(h, "bar", "foo");
-                results[0] = true;
-            }
-        }, 9000L);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+			}
+        }).assertLater(9000L);
+    }
+	
+	@Test
+	public void testExpireAndOverdueGet() throws InterruptedException {
+		final CommandChannelHandler h = new CommandChannelHandler(new Database());
+		
+		assertSet(h, "foo", "bar");
+		assertExpire(h, 1, "foo", "10");
+		
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertGet(h, null, "foo");
-                results[1] = true;
-            }
-        }, 10000L);
-        TimeUnit.SECONDS.sleep(11);
-        
-        assertThat(results[0], is(true));
-        assertThat(results[1], is(true));
+			}
+        }).assertLater(10000L);
 	}
 	
 	@Test
-	public void testTtl() throws InterruptedException {
+	public void testTtlAndGetWithLiveInTime() throws InterruptedException {
 		final CommandChannelHandler h = new CommandChannelHandler(new Database());
+
 		assertTtl(h, -1, "foo");
+		
 		assertSet(h, "foo", "bar");
 		assertTtl(h, -1, "foo");
+		
 		assertSetEx(h, "foo", "10", "bar");
 		assertTtl(h, 9, "foo");
 
-		final boolean[] results = new boolean[2];
-		
-		Timer timer = new Timer("a few second later", false);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
+        new AssertTask(new Runnable() {
+			public void run() {
                 assertGet(h, "bar", "foo");
         		assertTtl(h, 1, "foo");
-                results[0] = true;
-            }
-        }, 8000L);
-
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-        		assertTtl(h, -1, "foo");
-                results[1] = true;
-            }
-        }, 10000L);
-        TimeUnit.SECONDS.sleep(11);
+			}
+        }).assertLater(8000L);
+    }
+	
+	@Test
+	public void testTtlAndOverdueGet() throws InterruptedException {
+		final CommandChannelHandler h = new CommandChannelHandler(new Database());
         
-        assertThat(results[0], is(true));
-        assertThat(results[1], is(true));
+		assertSetEx(h, "foo", "10", "bar");
+		assertTtl(h, 9, "foo");
+
+        new AssertTask(new Runnable() {
+			public void run() {
+        		assertTtl(h, -1, "foo");
+                assertGet(h, null, "foo");
+			}
+        }).assertLater(10000L);
 	}
 
 	protected void assertSet(CommandChannelHandler h, String... args) {
@@ -245,7 +251,7 @@ public class CommandHandlerTest {
 
         MessageEvent e = createMessageEvent(setIn, setOut);
         h.messageReceived(null, e);
-        assertThat(setOut.toString(), is("+OK" + Reply.LT));
+        assertThat(setOut.toString(), ReplyMatchers.isOK());
     }
 
     protected void assertGet(CommandChannelHandler h, String expected, String... args) {
@@ -253,11 +259,7 @@ public class CommandHandlerTest {
         String getIn = createRequest(createCommand("GET", args));
         MessageEvent e2 = createMessageEvent(getIn, getOut);
         h.messageReceived(null, e2);
-        if (expected != null) {
-            assertThat(getOut.toString(), is("$" + expected.length() + Reply.LT + expected + Reply.LT));
-        } else {
-            assertThat(getOut.toString(), is("$-1" + Reply.LT));
-        }
+        assertThat(getOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected void assertExists(CommandChannelHandler h, int expected, String key) {
@@ -265,7 +267,7 @@ public class CommandHandlerTest {
         String existsIn = createRequest(createCommand("EXISTS", key));
         MessageEvent e = createMessageEvent(existsIn, existsOut);
         h.messageReceived(null, e);
-        assertThat(existsOut.toString(), is(":" + expected + Reply.LT));
+        assertThat(existsOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected void assertDel(CommandChannelHandler h, int expected, String... args) {
@@ -273,7 +275,7 @@ public class CommandHandlerTest {
         String delIn = createRequest(createCommand("DEL", args));
         MessageEvent e3 = createMessageEvent(delIn, delOut);
         h.messageReceived(null, e3);
-        assertThat(delOut.toString(), is(":" + expected + Reply.LT));
+        assertThat(delOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected void assertMget(CommandChannelHandler h, String[] expected, String... args) {
@@ -281,16 +283,7 @@ public class CommandHandlerTest {
         String mgetIn = createRequest(createCommand("MGET", args));
         MessageEvent e2 = createMessageEvent(mgetIn, mgetOut);
         h.messageReceived(null, e2);
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < expected.length; i++) {
-            if (expected[i] != null) {
-                sb.append("$" + expected[i].length() + Reply.LT + expected[i] + Reply.LT);
-            } else {
-                sb.append("$-1" + Reply.LT);
-            }
-        }
-        sb.insert(0, "*" + expected.length + Reply.LT);
-        assertThat(mgetOut.toString(), is(sb.toString()));
+        assertThat(mgetOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected void assertMset(CommandChannelHandler h, String... args) {
@@ -298,7 +291,7 @@ public class CommandHandlerTest {
         String msetIn = createRequest(createCommand("MSET", args));
         MessageEvent e2 = createMessageEvent(msetIn, msetOut);
         h.messageReceived(null, e2);
-        assertThat(msetOut.toString(), is("+OK" + Reply.LT));
+        assertThat(msetOut.toString(), ReplyMatchers.isOK());
     }
 
     protected void assertSetEx(CommandChannelHandler h, String... args) {
@@ -307,7 +300,7 @@ public class CommandHandlerTest {
 
         MessageEvent e = createMessageEvent(setIn, setOut);
         h.messageReceived(null, e);
-        assertThat(setOut.toString(), is("+OK" + Reply.LT));
+        assertThat(setOut.toString(), ReplyMatchers.isOK());
     }
     
     protected void assertExpire(CommandChannelHandler h, int expected, String... args) {
@@ -316,7 +309,7 @@ public class CommandHandlerTest {
 
         MessageEvent e = createMessageEvent(expireIn, expireOut);
         h.messageReceived(null, e);
-        assertThat(expireOut.toString(), is(":" + expected + Reply.LT));
+        assertThat(expireOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected void assertTtl(CommandChannelHandler h, int expected, String... args) {
@@ -325,7 +318,7 @@ public class CommandHandlerTest {
 
         MessageEvent e = createMessageEvent(ttlIn, ttlOut);
         h.messageReceived(null, e);
-        assertThat(ttlOut.toString(), is(":" + expected + Reply.LT));
+        assertThat(ttlOut.toString(), ReplyMatchers.is(expected));
     }
 
     protected String[] createCommand(String command, String... args) {
